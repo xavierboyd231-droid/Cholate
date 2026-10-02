@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chocolate Workhouse</title>
+    <style>
+        :root {
+            --bg-deep: #0e0f13;
+            --surface: #16181d;
+            --surface-hover: #1f2229;
+            --accent: #f59e0b;
+            --accent-glow: rgba(245, 158, 11, 0.25);
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border: #262932;
+        }
+
+        * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+
+        body {
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 36px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--accent);
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .search-container {
+            position: relative;
+            width: 100%;
+            max-width: 280px;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 9px 14px 9px 36px;
+            background: #090a0d;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .search-bar:focus { border-color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            pointer-events: none;
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 36px;
+            flex: 1;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Clean Multi-Row Grid */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 18px;
+        }
+
+        .game-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .game-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            background: var(--surface-hover);
+        }
+
+        /* Clean blank/minimalist placeholder thumbnail style */
+        .game-thumb {
+            width: 100%;
+            height: 110px;
+            background: #090a0d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .game-info {
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .game-title {
+            font-weight: 700;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .game-cat {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        /* Player View */
+        #playerContainer {
+            display: none;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            flex: 1;
+            gap: 15px;
+            padding: 30px 36px;
+        }
+
+        .player-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            padding: 10px 18px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+
+        .frame-box {
+            width: 100%;
+            height: 78vh;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        iframe { width: 100%; height: 100%; border: none; }
+
+        .btn {
+            background: var(--accent);
+            color: #111;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            🍫 Chocolate Workhouse
+        </div>
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" class="search-bar" id="searchBox" placeholder="Search workstation..." onkeyup="filterGames()">
+        </div>
+    </header>
+
+    <div class="main-container" id="arcadeContainer">
+        <div class="section-title">Available Modules</div>
+        <div class="games-grid" id="gamesGrid"></div>
+    </div>
+
+    <div id="playerContainer">
+        <div class="player-nav">
+            <button class="btn" onclick="returnToArcade()">← Back to Library</button>
+            <div id="playingTitle" style="font-weight: 700; font-size: 0.95rem;"></div>
+            <button class="btn" onclick="toggleFullscreen()">Fullscreen</button>
+        </div>
+        <div class="frame-box" id="frameBox">
+            <iframe id="gameFrame" src=""></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Clean list with minimal icons instead of fake stock images
+        const gamesList = [
+            { name: "Papa's Pizzeria", cat: "Simulation", icon: "🍕", url: "https://www.coolmathgames.com/sites/default/files/public_games/5161/" },
+            { name: "Papa's Freezeria", cat: "Simulation", icon: "🍨", url: "https://www.coolmathgames.com/sites/default/files/public_games/5163/" },
+            { name: "Basketball Legends", cat: "Sports", icon: "🏀", url: "https://basketbros.io/" },
+            { name: "Retro Bowl", cat: "Sports", icon: "🏈", url: "https://retrobowl.me/" },
+            { name: "Slope", cat: "Arcade", icon: "🟢", url: "https://kdata1.com/2020/10/slope/" },
+            { name: "Boxing Random", cat: "Sports", icon: "🥊", url: "https://boxingrandom.io/" },
+            { name: "Soccer Random", cat: "Sports", icon: "⚽", url: "https://soccer-random.io/" },
+            { name: "Moto X3M", cat: "Racing", icon: "🏍️", url: "https://images-opensocial.googleusercontent.com/gadgets/ifr?url=https://cdn.jsdelivr.net/gh/classroom6x/classroom6x.github.io@master/moto-x3m/index.xml" },
+            { name: "Drift Hunters", cat: "Racing", icon: "🏎️", url: "https://drifthunters.co/" },
+            { name: "Smash Karts", cat: "Action", icon: "🚗", url: "https://smashkarts.io/" },
+            { name: "Shell Shockers", cat: "Action", icon: "🥚", url: "https://shellshock.io/" },
+            { name: "Cookie Clicker", cat: "Puzzle", icon: "🍪", url: "https://orteil.dashnet.org/cookieclicker/" }
+        ];
+
+        function renderGrid(filter = "") {
+            const grid = document.getElementById('gamesGrid');
+            grid.innerHTML = "";
+
+            const matches = gamesList.filter(g => g.name.toLowerCase().includes(filter) || g.cat.toLowerCase().includes(filter));
+
+            matches.forEach(game => {
+                const card = document.createElement('div');
+                card.className = "game-card";
+                card.onclick = () => launchGame(game);
+                card.innerHTML = `
+                    <div class="game-thumb">${game.icon}</div>
+                    <div class="game-info">
+                        <div class="game-title">${game.name}</div>
+                        <div class="game-cat">${game.cat}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterGames() {
+            const query = document.getElementById('searchBox').value.toLowerCase();
+            renderGrid(query);
+        }
+
+        function launchGame(game) {
+            document.getElementById('arcadeContainer').style.display = 'none';
+            document.getElementById('playerContainer').style.display = 'flex';
+            document.getElementById('playingTitle').innerText = game.name;
+            document.getElementById('gameFrame').src = game.url;
+        }
+
+        function returnToArcade() {
+            document.getElementById('playerContainer').style.display = 'none';
+            document.getElementById('arcadeContainer').style.display = 'flex';
+            document.getElementById('gameFrame').src = "";
+        }
+
+        function toggleFullscreen() {
+            const frame = document.getElementById('frameBox');
+            if (!document.fullscreenElement) {
+                frame.requestFullscreen().catch(err => alert(err.message));
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        renderGrid();
+    </script>
+</body>
+</html>
